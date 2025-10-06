@@ -1,1 +1,50 @@
 /target/
+
+# === Java ===
+*.class
+*.jar
+*.war
+*.ear
+
+# === Logs ===
+*.log
+logs/
+log/
+*.tmp
+
+# === Maven ===
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+# === Gradle (if ever used) ===
+.gradle/
+build/
+
+# === IntelliJ IDEA ===
+.idea/
+*.iml
+*.iws
+out/
+
+# === VS Code ===
+.vscode/
+
+# === Eclipse ===
+.project
+.classpath
+.settings/
+
+# === OS files ===
+.DS_Store
+Thumbs.db
+
+# === Environment / Secrets ===
+.env
+application.properties
+application.yml
+
+# === Temp files ===
+*.swp
+*.swo
+
