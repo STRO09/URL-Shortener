@@ -3,9 +3,12 @@ package service;
 import java.util.Optional;
 import java.util.Random;
 
+import org.springframework.stereotype.Service;
+
 import models.URLMapping;
 import repository.URLMappingRepository;
 
+@Service
 public class URLMappingService {
 
 	private URLMappingRepository repository;
@@ -32,13 +35,13 @@ public class URLMappingService {
 		do {
 			code = generateRandomCode();
 		}
-		while(repository.findbyShortCode(code).isPresent());
+		while(repository.findByshortcode(code).isPresent());
 		return code;
 		
 	}
 	
-	private URLMapping createShortUrl(String longurl) {
-		String shortcode = generateRandomCode();
+	public URLMapping createShortUrl(String longurl) {
+		String shortcode = generateShortCode();
 		URLMapping mapping = new URLMapping();
 		mapping.setLongurl(longurl);
 		mapping.setShortcode(shortcode);
@@ -46,7 +49,7 @@ public class URLMappingService {
 	}
 	
 	public Optional<URLMapping> getByShortCode(String shortcode) {
-		return repository.findbyShortCode(shortcode);
+		return repository.findByshortcode(shortcode);
 	}
 	
 	

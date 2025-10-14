@@ -8,5 +8,5 @@ import models.URLMapping;
 
 public interface URLMappingRepository extends JpaRepository<URLMapping, Long> {
 
-	Optional<URLMapping> findbyShortCode(String shortcode);
+	Optional<URLMapping> findByshortcode(String shortcode);
 }
