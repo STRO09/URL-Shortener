@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { shortenUrl } from "./api/url";
 
 function App() {
   const [longurl, setLongUrl] = useState("");
@@ -10,15 +11,7 @@ function App() {
     setCopied(false);
 
     try {
-      const response = await fetch("http://localhost:8080/api/shorten", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ longurl }),
-      });
-
-      if (!response.ok) throw new Error("Failed to shorten URL");
-
-      const data = await response.json();
+      const data = await shortenUrl(longurl);
 
       // Construct the full redirect link
       const fullShortUrl = `http://localhost:8080/api/${data.shortcode}`;
@@ -72,9 +65,7 @@ function App() {
             </a>
           </p>
 
-          <button onClick={handleCopy}>
-            {copied ? "✅ Copied!" : "Copy"}
-          </button>
+          <button onClick={handleCopy}>{copied ? "✅ Copied!" : "Copy"}</button>
         </div>
       )}
     </div>
