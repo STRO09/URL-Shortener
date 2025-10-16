@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { shortenUrl } from "./api/url";
 
 function App() {
   const [longurl, setLongUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [is404, setIs404] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,6 +30,19 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    if (window.location.pathname !== "/") setIs404(true);
+  }, []);
+
+  if (is404) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <h1>404 - Page Not Found</h1>
+        <button onClick={() => (window.location.href = "/")}>Go Home</button>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -37,7 +51,7 @@ function App() {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-      }}  
+      }}
     >
       <div
         style={{
