@@ -80,7 +80,7 @@ The server starts on http://localhost:8080 (or your ngrok URL).
 
 3. Add .env 
    ```doesanythingworkhere?
-   VITE_BASE_URL=http://localhost:8080/api   # or your ngrok URL
+   BASE_URL=http://localhost:8080/api   # or your ngrok URL
 
 4. Start the React app:
    ```properties
