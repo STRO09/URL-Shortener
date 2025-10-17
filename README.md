@@ -1,19 +1,21 @@
 # 🔗 URL Shortener
 
 A full-stack **URL Shortener** built with **Spring Boot (Java)** and **React**.  
-Users can shorten long URLs, choose custom aliases, and instantly check alias availability — all with real-time validation and a sleek responsive UI.
+Users can shorten long URLs, choose custom aliases(up to 15 characters), and instantly check alias availability — all with real-time validation, QR code generation and a sleek responsive UI.
 
 ---
 
 ## 🚀 Features
 
 ✅ **Shorten URLs instantly** using a clean REST API  
-✅ **Custom aliases** — users can pick their own short codes  
+✅ **Custom aliases** — users can pick their own short codes (max length: 15)
 ✅ **Live alias availability check** (frontend + backend integration)  
 ✅ **Smart reusability**
    - If the same long URL is shortened again, the *existing short code* is returned  
-   - If a user later adds a *custom alias* for the same URL, it replaces the old code  
-✅ **Automatic redirect** to the original URL  
+   - If a user later adds a *custom alias* for the same URL, it replaces the old code
+✅ **TTL / Expiration** — short URLs are valid for 1 month
+✅ **Automatic redirect** to the original URL
+✅ **QR Code generation** for each shortened URL (using ZXing)
 ✅ **CORS-enabled backend** for easy frontend integration  
 ✅ **Beautiful UI** with gradient design, instant feedback, and responsive layout
 
@@ -27,6 +29,7 @@ Users can shorten long URLs, choose custom aliases, and instantly check alias av
 - **Debounce + in-memory caching** for live alias checks
 - **Clipboard API** for “Copy Link” functionality
 - Styled using plain **CSS** and inline styles
+- Environment-based Base URL (can point to **localhost:8080** or your **ngrok URL**)
 
 ### ⚙️ Backend
 - **Java 8**
@@ -36,6 +39,8 @@ Users can shorten long URLs, choose custom aliases, and instantly check alias av
 - **Hibernate**
 - **MySQL** (for persistent storage)
 - **CORS Configuration** via `@CrossOrigin`
+- **ZXing** for QR code generation
+- Environment-based Base URL stored in **application.properties** in backend and **.env** in frontend (can be localhost:8080 or ngrok URL)
 
 ---
 
@@ -51,10 +56,11 @@ Users can shorten long URLs, choose custom aliases, and instantly check alias av
    spring.datasource.username=root
    spring.datasource.password=yourpassword
    spring.jpa.hibernate.ddl-auto=update
+   app.base-url=http://localhost:8080/api   # or your ngrok URL
 
 3. Run the Spring Boot app:
    run the mainn/**UrlShortenerApplication** as application.
-The server starts on http://localhost:8080
+The server starts on http://localhost:8080 (or your ngrok URL).
 
 ### 🌐 Frontend
 
@@ -64,7 +70,11 @@ The server starts on http://localhost:8080
    ```properties
    npm install
 
-3. Start the React app:
+3. Add .env 
+   ```doesanythingworkhere?
+   VITE_BASE_URL=http://localhost:8080/api   # or your ngrok URL
+
+4. Start the React app:
    ```properties
    npm run dev
 Visit http://localhost:5173
@@ -77,9 +87,8 @@ Visit http://localhost:5173
 ### Build Tools: Maven, Vite
 
 ## 🧩 Future Enhancements
-📅 Expiration dates for short links
 
-🧾 QR code generation for each shortened link
+📅 Configurable expiration dates for short links (currently 1 month)
 
 🛡️ Input sanitization and rate limiting
 
