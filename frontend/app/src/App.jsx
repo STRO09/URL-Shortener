@@ -105,7 +105,13 @@ function App() {
 
         <form
           onSubmit={handleSubmit}
-          style={{ display: "flex", gap: "10px", justifyContent: "center" }}
+          style={{
+            display: "flex",
+            gap: "15px",
+            justifyContent: "center",
+            flexDirection: "column",
+            width: "100%",
+          }}
         >
           <input
             type="url"
@@ -115,31 +121,50 @@ function App() {
             required
             style={{
               width: "100%",
-              padding: "10px 15px",
+              padding: "12px 15px",
               borderRadius: "10px",
               border: "none",
               outline: "none",
               fontSize: "15px",
             }}
           />
-          <input
-            type="text"
-            placeholder="Custom alias (optional)"
-            value={alias}
-            onChange={(e) => handleAliasChange(e.target.value)}
-          />
-          <p style={{ color: aliasStatus === "available" ? "green" : "red" }}>
-            {alias && aliasStatusMessage}
-          </p>
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              gap: "5px",
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Custom alias (optional)"
+              value={alias}
+              onChange={(e) => handleAliasChange(e.target.value)}
+              style={{
+        width: "100%",
+        padding: "12px 15px",
+        borderRadius: "10px",
+        border: "none",
+        outline: "none",
+        fontSize: "15px",
+      }}
+            />
+            <p style={{ color: aliasStatus === "available" ? "lightgreen" : "tomato", margin: 0  }}>
+              {alias && aliasStatusMessage}
+            </p>
+          </div>
           <button
             type="submit"
             disabled={alias && aliasStatus === "taken"}
             style={{
+              width: "50%",
+              marginLeft: "25%",
               background: "#fff",
               color: "#764ba2",
               border: "none",
               borderRadius: "10px",
-              padding: "10px 20px",
+              padding: "12px 0px",
               fontWeight: "bold",
               cursor:
                 alias && aliasStatus === "taken" ? "not-allowed" : "pointer",

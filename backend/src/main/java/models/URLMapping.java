@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
 @Entity
@@ -16,23 +17,31 @@ public class URLMapping {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column(unique = true, nullable = false)
 	private String longurl;
-	
+
 	@Column(unique = true, nullable = false, length = 15)
 	private String shortcode;
-	
+
 	@Column(nullable = false)
 	private LocalDateTime createdAt = LocalDateTime.now();
-	
+
+	@Column(nullable = false)
+	private LocalDateTime expiresAt;
+
 	@Column
 	private int clickCount = 0;
-	
-    // Explicit no-arg constructor required
-    public URLMapping() {
-    }
 
+	// Explicit no-arg constructor required
+	public URLMapping() {
+	}
+
+	@PrePersist
+	public void setExpiresAt() {
+		if (expiresAt == null && createdAt != null)
+			expiresAt = this.createdAt.plusMonths(1);
+	}
 
 	public Long getId() {
 		return id;
@@ -73,6 +82,5 @@ public class URLMapping {
 	public void setClickCount(int clickCount) {
 		this.clickCount = clickCount;
 	}
-	
-	
+
 }
