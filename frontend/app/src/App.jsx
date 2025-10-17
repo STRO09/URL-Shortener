@@ -6,6 +6,42 @@ function App() {
   const [shortUrl, setShortUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [is404, setIs404] = useState(false);
+  const [alias, setAlias] = useState("");
+  const [aliasStatus, setAliasStatus] = useState(null);
+  const [aliasStatusMessage, setAliasStatusMessage] = useState("");
+
+  // simple in-memory cache object
+const cache = {};
+
+const handleAliasChange = (value) => {
+  setAlias(value);
+  checkAliasAvailability(value);
+};
+
+let timeout;
+const checkAliasAvailability = (value) => {
+  clearTimeout(timeout);
+  timeout = setTimeout(async () => {
+    if (!value) return;
+    if (cache[value]) {  // <-- small caching layer
+      setAliasStatus(cache[value]);
+      setAliasStatusMessage(
+        cache[value] === "available" ? "Available ✅" : "Taken ❌"
+      );
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:8080/api/check-alias/${value}`);
+      const data = await res.json();
+      setAliasStatus(data.available ? "available" : "taken");
+      setAliasStatusMessage(data.available ? "Available ✅" : "Taken ❌");
+      cache[value] = data.available ? "available" : "taken"; // cache it
+    } catch (err) {
+      console.error(err);
+    }
+  }, 400); // debounce delay
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,6 +124,15 @@ function App() {
               fontSize: "15px",
             }}
           />
+          <input
+            type="text"
+            placeholder="Custom alias (optional)"
+            value={alias}
+            onChange={(e) => handleAliasChange(e.target.value)}
+          />
+          <p style={{ color: aliasStatus === "available" ? "green" : "red" }}>
+            {alias && aliasStatusMessage}
+          </p>
           <button
             type="submit"
             style={{
@@ -139,6 +184,22 @@ function App() {
               }}
             >
               {copied ? "✅ Copied!" : "Copy Link"}
+            </button>
+
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                marginLeft: "10px",
+                background: "#6c63ff",
+                color: "white",
+                border: "none",
+                borderRadius: "10px",
+                padding: "8px 15px",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              Refresh
             </button>
           </div>
         )}

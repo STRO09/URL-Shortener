@@ -41,6 +41,12 @@ public class URLMappingService {
 	}
 	
 	public URLMapping createShortUrl(String longurl) {
+		
+        Optional<URLMapping> existing = repository.findBylongurl(longurl);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+		
 		String shortcode = generateShortCode();
 		URLMapping mapping = new URLMapping();
 		mapping.setLongurl(longurl);
@@ -50,6 +56,10 @@ public class URLMappingService {
 	
 	public Optional<URLMapping> getByShortCode(String shortcode) {
 		return repository.findByshortcode(shortcode);
+	}
+	
+	public boolean isAliasAvailable(String customalias) {
+		return repository.existsByshortcode(customalias);
 	}
 	
 	

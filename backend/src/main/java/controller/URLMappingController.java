@@ -1,17 +1,11 @@
 package controller;
 
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import models.URLMapping;
 import service.URLMappingService;
 
@@ -43,4 +37,17 @@ public class URLMappingController {
 				.map(mapping -> ResponseEntity.status(302).location(URI.create(mapping.getLongurl())).build())
 				.orElse(ResponseEntity.notFound().build());
 	}
+	
+	
+	
+	
+	@GetMapping("/check-alias/{alias}")
+	public ResponseEntity<Map<String, Boolean>> checkAlias(@PathVariable String alias) {
+		boolean exists = service.isAliasAvailable(alias);
+	    Map<String, Boolean> response = new HashMap<>();
+	    response.put("available", !exists);
+	    return ResponseEntity.ok(response);
+
+	}
+
 }
