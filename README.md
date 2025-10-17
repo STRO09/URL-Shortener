@@ -69,36 +69,12 @@ The server starts on http://localhost:8080
    npm run dev
 Visit http://localhost:5173
 
-### 🧠 How It Works
-
-User enters a long URL (and optionally a custom alias).
-
-Frontend checks alias availability in real time.
-
-#### Backend logic:
-
-Generates a random short code if no alias is provided.
-
-Returns the existing code if the URL was shortened before.
-
-Replaces the existing short code with the new alias if the user adds one later.
-
-URLs are stored in a MySQL database and fetched during redirect.
-
-## 🧾 Features
-
-✅ Create short URLs instantly
-✅ Custom alias support
-✅ Live alias availability check
-✅ Reuse or update shortcodes if the same URL is re-entered
-✅ MySQL database integration
-✅ Redirect logic with full backend validation
 
 ## 🚀 Tech Stack
-## Frontend: React, JavaScript, HTML5, CSS3
-## Backend: Java, Spring Boot, Spring Data JPA, REST API
-## Database: MySQL
-## Build Tools: Maven, Vite
+### Frontend: React, JavaScript, HTML5, CSS3
+### Backend: Java, Spring Boot, Spring Data JPA, REST API
+### Database: MySQL
+### Build Tools: Maven, Vite
 
 ## 🧩 Future Enhancements
 📅 Expiration dates for short links
