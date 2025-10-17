@@ -13,6 +13,7 @@ Users can shorten long URLs, choose custom aliases(up to 15 characters), and ins
 ✅ **Smart reusability**
    - If the same long URL is shortened again, the *existing short code* is returned  
    - If a user later adds a *custom alias* for the same URL, it replaces the old code
+     
 ✅ **TTL / Expiration** — short URLs are valid for 1 month
 ✅ **Automatic redirect** to the original URL
 ✅ **QR Code generation** for each shortened URL (using ZXing)
