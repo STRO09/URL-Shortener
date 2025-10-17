@@ -1,5 +1,7 @@
+const BASE_URL = import.meta.env.BASE_URL;
+
 export async function shortenUrl(longurl, customalias = "") {
-  const response = await fetch("http://localhost:8080/api/shorten", {
+  const response = await fetch(`${BASE_URL}/shorten`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ longurl, customalias }),
@@ -12,7 +14,7 @@ export async function shortenUrl(longurl, customalias = "") {
 
 export async function checkalias(customalias) {
   const response = await fetch(
-    `http://localhost:8080/api/check-alias/${customalias}`
+    `${BASE_URL}/check-alias/${customalias}`
   );
   return response.json();
 }

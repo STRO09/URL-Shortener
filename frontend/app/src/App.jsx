@@ -9,6 +9,7 @@ function App() {
   const [alias, setAlias] = useState("");
   const [aliasStatus, setAliasStatus] = useState(null);
   const [aliasStatusMessage, setAliasStatusMessage] = useState("");
+  const [qrCode, setQrCode] = useState("");
 
   // simple in-memory cache object
   const cache = {};
@@ -49,6 +50,10 @@ function App() {
       const data = await shortenUrl(longurl, alias);
       const fullShortUrl = `http://localhost:8080/api/${data.shortcode}`;
       setShortUrl(fullShortUrl);
+
+      if (data.qrCode) {
+        setQrCode(data.qrCode); // set QR code in state
+      }
     } catch (err) {
       console.error("Error:", err);
       alert("Something went wrong. Check console for details.");
@@ -140,17 +145,23 @@ function App() {
               type="text"
               placeholder="Custom alias (optional)"
               value={alias}
+              maxLength={15}
               onChange={(e) => handleAliasChange(e.target.value)}
               style={{
-        width: "100%",
-        padding: "12px 15px",
-        borderRadius: "10px",
-        border: "none",
-        outline: "none",
-        fontSize: "15px",
-      }}
+                width: "100%",
+                padding: "12px 15px",
+                borderRadius: "10px",
+                border: "none",
+                outline: "none",
+                fontSize: "15px",
+              }}
             />
-            <p style={{ color: aliasStatus === "available" ? "lightgreen" : "tomato", margin: 0  }}>
+            <p
+              style={{
+                color: aliasStatus === "available" ? "lightgreen" : "tomato",
+                margin: 0,
+              }}
+            >
               {alias && aliasStatusMessage}
             </p>
           </div>
@@ -230,6 +241,12 @@ function App() {
             >
               Refresh
             </button>
+          </div>
+        )}
+        {shortUrl && qrCode && (
+          <div>
+            <p>Scan the QR Code:</p>
+            <img src={`data:image/png;base64,${qrCode}`} alt="QR Code" />
           </div>
         )}
       </div>
