@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { shortenUrl } from "./api/url";
+import { shortenUrl, checkalias } from "./api/url";
 
 function App() {
   const [longurl, setLongUrl] = useState("");
@@ -24,7 +24,6 @@ function App() {
     timeout = setTimeout(async () => {
       if (!value) return;
       if (cache[value]) {
-        // <-- small caching layer
         setAliasStatus(cache[value]);
         setAliasStatusMessage(
           cache[value] === "available" ? "Available ✅" : "Taken ❌"
@@ -32,10 +31,7 @@ function App() {
         return;
       }
       try {
-        const res = await fetch(
-          `http://localhost:8080/api/check-alias/${value}`
-        );
-        const data = await res.json();
+        const data = await checkalias(value);
         setAliasStatus(data.available ? "available" : "taken");
         setAliasStatusMessage(data.available ? "Available ✅" : "Taken ❌");
         cache[value] = data.available ? "available" : "taken"; // cache it
