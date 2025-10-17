@@ -87,17 +87,14 @@ Visit http://localhost:5173
 
 🌍 Public API documentation (Swagger)
 
-💻 Demo Screenshots
-(Add screenshots here once you have your UI finalized)
-Example:
+## 👨‍💻 Author
 
-👨‍💻 Author
-Sagar Janjoted
-📍 Mumbai, India
+**Sagar Janjoted**  
+📍 Mumbai, India  
 
-🔗 LinkedIn
+- 🔗 [LinkedIn](https://www.linkedin.com/in/sagar-janjoted-100912svj)  
+- 💻 [GitHub](https://github.com/STRO09)
 
-💻 GitHub
 
 ⭐ If you like this project, give it a star on GitHub!
 
