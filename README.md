@@ -24,12 +24,12 @@ Users can shorten long URLs, choose custom aliases, and instantly check alias av
 ### 🖥️ Frontend
 - **React.js** (Hooks)
 - **Fetch API** for backend communication
-- **Debounce + caching** for live alias checks
+- **Debounce + in-memory caching** for live alias checks
 - **Clipboard API** for “Copy Link” functionality
 - Styled using plain **CSS** and inline styles
 
 ### ⚙️ Backend
-- **Java 17**
+- **Java 8**
 - **Spring Boot**
 - **Spring Web**
 - **Spring Data JPA**
@@ -43,7 +43,7 @@ Users can shorten long URLs, choose custom aliases, and instantly check alias av
 
 ### 🧑‍💻 Backend
 
-1. Navigate to the **backend** folder.
+1. Import the **backend** folder into Eclipse ( or any IDE of your choice.)
 2. Update your database details in `application.properties`:
 
    ```properties
@@ -51,34 +51,31 @@ Users can shorten long URLs, choose custom aliases, and instantly check alias av
    spring.datasource.username=root
    spring.datasource.password=yourpassword
    spring.jpa.hibernate.ddl-auto=update
-Run the Spring Boot app:
 
-bash
-Copy code
-mvn spring-boot:run
+3. Run the Spring Boot app:
+   run the mainn/**UrlShortenerApplication** as application.
 The server starts on http://localhost:8080
 
-🌐 Frontend
-Navigate to the frontend folder.
+### 🌐 Frontend
 
-Install dependencies:
+1. Navigate to the frontend folder.
+2. Install dependencies:
 
-bash
-Copy code
-npm install
-Start the React app:
+   ```properties
+   npm install
 
-bash
-Copy code
-npm run dev
+3. Start the React app:
+   ```properties
+   npm run dev
 Visit http://localhost:5173
 
-🧠 How It Works
+### 🧠 How It Works
+
 User enters a long URL (and optionally a custom alias).
 
 Frontend checks alias availability in real time.
 
-Backend logic:
+#### Backend logic:
 
 Generates a random short code if no alias is provided.
 
@@ -88,7 +85,8 @@ Replaces the existing short code with the new alias if the user adds one later.
 
 URLs are stored in a MySQL database and fetched during redirect.
 
-🧾 Features
+## 🧾 Features
+
 ✅ Create short URLs instantly
 ✅ Custom alias support
 ✅ Live alias availability check
@@ -96,14 +94,13 @@ URLs are stored in a MySQL database and fetched during redirect.
 ✅ MySQL database integration
 ✅ Redirect logic with full backend validation
 
-🚀 Tech Stack
-Frontend: React, JavaScript, HTML5, CSS3
-Backend: Java, Spring Boot, Spring Data JPA, REST API
-Database: MySQL
-Build Tools: Maven, Vite
-Others: Fetch API, JSON, CORS
+## 🚀 Tech Stack
+## Frontend: React, JavaScript, HTML5, CSS3
+## Backend: Java, Spring Boot, Spring Data JPA, REST API
+## Database: MySQL
+## Build Tools: Maven, Vite
 
-🧩 Future Enhancements
+## 🧩 Future Enhancements
 📅 Expiration dates for short links
 
 🧾 QR code generation for each shortened link
@@ -127,5 +124,5 @@ Sagar Janjoted
 💻 GitHub
 
 ⭐ If you like this project, give it a star on GitHub!
-## 🏗️ Project Structure
+
 
