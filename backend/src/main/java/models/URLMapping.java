@@ -20,7 +20,7 @@ public class URLMapping {
 	@Column(unique = true, nullable = false)
 	private String longurl;
 	
-	@Column(unique = true, nullable = false, length = 6)
+	@Column(unique = true, nullable = false, length = 15)
 	private String shortcode;
 	
 	@Column(nullable = false)

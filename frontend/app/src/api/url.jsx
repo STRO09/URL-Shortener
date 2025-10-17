@@ -1,8 +1,8 @@
-export async function shortenUrl(longurl) {
+export async function shortenUrl(longurl, customalias="") {
   const response = await fetch("http://localhost:8080/api/shorten", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ longurl }),
+    body: JSON.stringify({ longurl, customalias }),
   });
 
   if (!response.ok) throw new Error("Failed to shorten URL");

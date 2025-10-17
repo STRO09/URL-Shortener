@@ -22,13 +22,24 @@ public class URLMappingController {
 
 	// POST /api/shorten — to shorten a URL
 	@PostMapping("/shorten")
-	public ResponseEntity<Map<String, String>> createShortUrl(@RequestBody URLMapping request) {
-		URLMapping mapping = service.createShortUrl(request.getLongurl());
-		Map<String, String> response = new HashMap<>();
-		response.put("shortcode", mapping.getShortcode());
-		return ResponseEntity.ok(response);
+	public ResponseEntity<Map<String, String>> createShortUrl(@RequestBody Map<String, String> request) {
+	    String longUrl = request.get("longurl");
+	    String customAlias = request.get("customalias"); // optional
 
+	    try {
+	        URLMapping mapping = service.createOrUpdateShortUrl(longUrl, customAlias);
+
+	        Map<String, String> response = new HashMap<>();
+	        response.put("shortcode", mapping.getShortcode());
+	        return ResponseEntity.ok(response);
+	    } catch (IllegalArgumentException e) {
+	        // Custom alias already taken
+	        Map<String, String> error = new HashMap<>();
+	        error.put("error", e.getMessage());
+	        return ResponseEntity.status(409).body(error); // 409 Conflict
+	    }
 	}
+
 
 	// GET /api/{shortcode} — redirect to original
 	@GetMapping("/{shortcode}")

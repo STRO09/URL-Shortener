@@ -11,44 +11,46 @@ function App() {
   const [aliasStatusMessage, setAliasStatusMessage] = useState("");
 
   // simple in-memory cache object
-const cache = {};
+  const cache = {};
 
-const handleAliasChange = (value) => {
-  setAlias(value);
-  checkAliasAvailability(value);
-};
+  const handleAliasChange = (value) => {
+    setAlias(value);
+    checkAliasAvailability(value);
+  };
 
-let timeout;
-const checkAliasAvailability = (value) => {
-  clearTimeout(timeout);
-  timeout = setTimeout(async () => {
-    if (!value) return;
-    if (cache[value]) {  // <-- small caching layer
-      setAliasStatus(cache[value]);
-      setAliasStatusMessage(
-        cache[value] === "available" ? "Available ✅" : "Taken ❌"
-      );
-      return;
-    }
-    try {
-      const res = await fetch(`http://localhost:8080/api/check-alias/${value}`);
-      const data = await res.json();
-      setAliasStatus(data.available ? "available" : "taken");
-      setAliasStatusMessage(data.available ? "Available ✅" : "Taken ❌");
-      cache[value] = data.available ? "available" : "taken"; // cache it
-    } catch (err) {
-      console.error(err);
-    }
-  }, 400); // debounce delay
-};
-
+  let timeout;
+  const checkAliasAvailability = (value) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(async () => {
+      if (!value) return;
+      if (cache[value]) {
+        // <-- small caching layer
+        setAliasStatus(cache[value]);
+        setAliasStatusMessage(
+          cache[value] === "available" ? "Available ✅" : "Taken ❌"
+        );
+        return;
+      }
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/check-alias/${value}`
+        );
+        const data = await res.json();
+        setAliasStatus(data.available ? "available" : "taken");
+        setAliasStatusMessage(data.available ? "Available ✅" : "Taken ❌");
+        cache[value] = data.available ? "available" : "taken"; // cache it
+      } catch (err) {
+        console.error(err);
+      }
+    }, 400); // debounce delay
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setCopied(false);
 
     try {
-      const data = await shortenUrl(longurl);
+      const data = await shortenUrl(longurl, alias);
       const fullShortUrl = `http://localhost:8080/api/${data.shortcode}`;
       setShortUrl(fullShortUrl);
     } catch (err) {
@@ -135,6 +137,7 @@ const checkAliasAvailability = (value) => {
           </p>
           <button
             type="submit"
+            disabled={alias && aliasStatus === "taken"}
             style={{
               background: "#fff",
               color: "#764ba2",
@@ -142,10 +145,15 @@ const checkAliasAvailability = (value) => {
               borderRadius: "10px",
               padding: "10px 20px",
               fontWeight: "bold",
-              cursor: "pointer",
+              cursor:
+                alias && aliasStatus === "taken" ? "not-allowed" : "pointer",
               transition: "0.3s",
+              opacity: alias && aliasStatus === "taken" ? 0.5 : 1,
             }}
-            onMouseOver={(e) => (e.target.style.background = "#f1f1f1")}
+            onMouseOver={(e) => {
+              if (!(alias && aliasStatus === "taken"))
+                e.target.style.background = "#f1f1f1";
+            }}
             onMouseOut={(e) => (e.target.style.background = "#fff")}
           >
             Shorten

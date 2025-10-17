@@ -40,14 +40,22 @@ public class URLMappingService {
 		
 	}
 	
-	public URLMapping createShortUrl(String longurl) {
+	public URLMapping createOrUpdateShortUrl(String longurl, String customalias) {
+		
+	    if (customalias != null && repository.findByshortcode(customalias).isPresent()) {
+	        throw new IllegalArgumentException("Custom alias already taken!");
+	    }
 		
         Optional<URLMapping> existing = repository.findBylongurl(longurl);
         if (existing.isPresent()) {
-            return existing.get();
+            URLMapping mapping = existing.get();
+            // Overwrite with custom alias if provided, else keep old one
+            if (customalias != null) {
+                mapping.setShortcode(customalias);
+            }
+            return repository.save(mapping); // Save updated record
         }
-		
-		String shortcode = generateShortCode();
+        String shortcode = (customalias != null) ? customalias :  generateShortCode();
 		URLMapping mapping = new URLMapping();
 		mapping.setLongurl(longurl);
 		mapping.setShortcode(shortcode);
