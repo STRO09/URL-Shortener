@@ -65,7 +65,7 @@ public class URLMappingService {
 		return repository.findByshortcode(shortcode);
 	}
 
-	public boolean isAliasAvailable(String customalias) {
+	public boolean AliasExistornot(String customalias) {
 		return repository.existsByshortcode(customalias);
 	}
 

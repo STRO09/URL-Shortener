@@ -62,25 +62,21 @@ public class URLMappingController {
 	    }
 	}
 
+	@GetMapping("/check-alias/{alias}")
+	public ResponseEntity<Map<String, Boolean>> checkAlias(@PathVariable String alias) {
+		boolean exists = service.AliasExistornot(alias);
+	    Map<String, Boolean> response = new HashMap<>();
+	    response.put("available", !exists);
+	    return ResponseEntity.ok(response);
 
+	}
+	
 	// GET /api/{shortcode} — redirect to original
 	@GetMapping("/{shortcode}")
 	public ResponseEntity<?> redirect(@PathVariable String shortcode) {
 		return service.getByShortCode(shortcode)
 				.map(mapping -> ResponseEntity.status(302).location(URI.create(mapping.getLongurl())).build())
 				.orElse(ResponseEntity.notFound().build());
-	}
-	
-	
-	
-	
-	@GetMapping("/check-alias/{alias}")
-	public ResponseEntity<Map<String, Boolean>> checkAlias(@PathVariable String alias) {
-		boolean exists = service.isAliasAvailable(alias);
-	    Map<String, Boolean> response = new HashMap<>();
-	    response.put("available", !exists);
-	    return ResponseEntity.ok(response);
-
 	}
 
 }
