@@ -33,7 +33,7 @@ Users can shorten long URLs, choose custom aliases(up to 15 characters), and ins
 
 ### 🖥️ Frontend
 - **React.js** (Hooks)
-- **Fetch API** for backend communication
+- **Axios** for communication with backend
 - **Debounce + in-memory caching** for live alias checks
 - **Clipboard API** for “Copy Link” functionality
 - Styled using plain **CSS** and inline styles
