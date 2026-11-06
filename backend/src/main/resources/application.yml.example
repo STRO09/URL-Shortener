@@ -1,0 +1,20 @@
+# ============================================================================
+# Application Configuration Template (YAML Example)
+# Copy this file to src/main/resources/application.yml
+# ============================================================================
+
+spring:
+  profiles:
+    # Choose active database profile:
+    #   mysql  -> uses application-mysql.properties
+    #   oracle -> uses application-oracle.properties
+    active: mysql
+
+# ===== Server Configuration =====
+server:
+  port: 8080
+
+# ===== App Configuration =====
+app:
+  # Base URL for shortened links (e.g. http://localhost:8080 or your domain/ngrok)
+  base-url: http://localhost:8080

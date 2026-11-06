@@ -1,5 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { shortenUrl, checkalias } from "./api/url";
+
+// ---------------------------------------------------------------------------
+// Alias validation — mirrors the backend AliasValidator rules exactly:
+//   • Letters (a-z, A-Z), digits (0-9), hyphens (-), underscores (_)
+//   • 1 – 15 characters
+// ---------------------------------------------------------------------------
+const ALIAS_PATTERN = /^[a-zA-Z0-9_-]{1,15}$/;
+
+function validateAliasFormat(value) {
+  if (!value) return null; // empty = no alias, that's fine
+  if (value.length > 15) return "Alias must be 15 characters or fewer.";
+  if (!/^[a-zA-Z0-9_-]+$/.test(value))
+    return "Only letters, digits, hyphens (-) and underscores (_) are allowed.";
+  return null; // null = no format error
+}
 
 function App() {
   const [longurl, setLongUrl] = useState("");
@@ -7,56 +22,73 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [is404, setIs404] = useState(false);
   const [alias, setAlias] = useState("");
+  // "available" | "taken" | "invalid" | null
   const [aliasStatus, setAliasStatus] = useState(null);
   const [aliasStatusMessage, setAliasStatusMessage] = useState("");
   const [qrCode, setQrCode] = useState("");
 
-  // simple in-memory cache object
-  const cache = {};
+  // Persistent cache that survives re-renders (unlike const cache = {})
+  const cacheRef = useRef({});
+  const timeoutRef = useRef(null);
+
+  const checkAliasAvailability = (value) => {
+    clearTimeout(timeoutRef.current);
+
+    // ── Instant format check (no debounce needed) ──────────────────────────
+    const formatError = validateAliasFormat(value);
+    if (formatError) {
+      setAliasStatus("invalid");
+      setAliasStatusMessage(formatError);
+      return; // don't hit the API for a bad format
+    }
+
+    if (!value) {
+      setAliasStatus(null);
+      setAliasStatusMessage("");
+      return;
+    }
+
+    // ── Debounced availability check ───────────────────────────────────────
+    timeoutRef.current = setTimeout(async () => {
+      const cache = cacheRef.current;
+      if (cache[value] !== undefined) {
+        setAliasStatus(cache[value]);
+        setAliasStatusMessage(cache[value] === "available" ? "Available ✅" : "Taken ❌");
+        return;
+      }
+      try {
+        const data = await checkalias(value);
+        const status = data.available ? "available" : "taken";
+        setAliasStatus(status);
+        setAliasStatusMessage(status === "available" ? "Available ✅" : "Taken ❌");
+        cache[value] = status;
+      } catch (err) {
+        console.error(err);
+      }
+    }, 400);
+  };
 
   const handleAliasChange = (value) => {
     setAlias(value);
     checkAliasAvailability(value);
   };
 
-  let timeout;
-  const checkAliasAvailability = (value) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(async () => {
-      if (!value) return;
-      if (cache[value]) {
-        setAliasStatus(cache[value]);
-        setAliasStatusMessage(
-          cache[value] === "available" ? "Available ✅" : "Taken ❌"
-        );
-        return;
-      }
-      try {
-        const data = await checkalias(value);
-        setAliasStatus(data.available ? "available" : "taken");
-        setAliasStatusMessage(data.available ? "Available ✅" : "Taken ❌");
-        cache[value] = data.available ? "available" : "taken"; // cache it
-      } catch (err) {
-        console.error(err);
-      }
-    }, 400); // debounce delay
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setCopied(false);
 
+    // Guard: don't submit if alias format is bad or alias is taken
+    if (alias && (aliasStatus === "invalid" || aliasStatus === "taken")) return;
+
     try {
       const data = await shortenUrl(longurl, alias);
-      const fullShortUrl = `http://localhost:8080/api/${data.shortcode}`;
-      setShortUrl(fullShortUrl);
-
-      if (data.qrCode) {
-        setQrCode(data.qrCode); // set QR code in state
-      }
+      const base = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+      setShortUrl(`${base}/${data.shortcode}`);
+      if (data.qrCode) setQrCode(data.qrCode);
     } catch (err) {
+      const serverMessage = err?.response?.data?.error;
       console.error("Error:", err);
-      alert("Something went wrong. Check console for details.");
+      alert(serverMessage || "Something went wrong. Check console for details.");
     }
   };
 
@@ -81,6 +113,13 @@ function App() {
       </div>
     );
   }
+
+  // Derive button disabled state: disabled when alias has a format error or is taken
+  const isSubmitDisabled = alias && (aliasStatus === "taken" || aliasStatus === "invalid");
+
+  // Message colour: green for available, red for taken/invalid
+  const messageColor =
+    aliasStatus === "available" ? "lightgreen" : "tomato";
 
   return (
     <div
@@ -143,7 +182,7 @@ function App() {
           >
             <input
               type="text"
-              placeholder="Custom alias (optional)"
+              placeholder="Custom alias (optional) — letters, digits, - _"
               value={alias}
               maxLength={15}
               onChange={(e) => handleAliasChange(e.target.value)}
@@ -151,15 +190,21 @@ function App() {
                 width: "100%",
                 padding: "12px 15px",
                 borderRadius: "10px",
-                border: "none",
+                border:
+                  alias && aliasStatus === "invalid"
+                    ? "2px solid tomato"
+                    : "none",
                 outline: "none",
                 fontSize: "15px",
               }}
             />
+            {/* Status / validation message */}
             <p
               style={{
-                color: aliasStatus === "available" ? "lightgreen" : "tomato",
+                color: messageColor,
                 margin: 0,
+                fontSize: "13px",
+                minHeight: "18px",
               }}
             >
               {alias && aliasStatusMessage}
@@ -167,7 +212,7 @@ function App() {
           </div>
           <button
             type="submit"
-            disabled={alias && aliasStatus === "taken"}
+            disabled={!!isSubmitDisabled}
             style={{
               width: "50%",
               marginLeft: "25%",
@@ -177,14 +222,12 @@ function App() {
               borderRadius: "10px",
               padding: "12px 0px",
               fontWeight: "bold",
-              cursor:
-                alias && aliasStatus === "taken" ? "not-allowed" : "pointer",
+              cursor: isSubmitDisabled ? "not-allowed" : "pointer",
               transition: "0.3s",
-              opacity: alias && aliasStatus === "taken" ? 0.5 : 1,
+              opacity: isSubmitDisabled ? 0.5 : 1,
             }}
             onMouseOver={(e) => {
-              if (!(alias && aliasStatus === "taken"))
-                e.target.style.background = "#f1f1f1";
+              if (!isSubmitDisabled) e.target.style.background = "#f1f1f1";
             }}
             onMouseOut={(e) => (e.target.style.background = "#fff")}
           >

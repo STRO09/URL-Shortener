@@ -14,7 +14,9 @@ import com.google.zxing.WriterException;
 
 import models.URLMapping;
 import service.URLMappingService;
+import utils.AliasValidator;
 import utils.QRCodeGenerator;
+import utils.URLNormalizer;
 
 @RestController
 @RequestMapping("/api")
@@ -35,42 +37,76 @@ public class URLMappingController {
 	    String longUrl = request.get("longurl");
 	    String customAlias = request.get("customalias"); // optional
 
+	    // ── Input validation (400 Bad Request) ──────────────────────────────────
+	    Map<String, String> error = new HashMap<>();
+
+	    // 1. Validate & normalize the URL first
 	    try {
-	        URLMapping mapping = service.createOrUpdateShortUrl(longUrl, customAlias);
+	        URLNormalizer.normalize(longUrl); // throws IllegalArgumentException if bad
+	    } catch (IllegalArgumentException e) {
+	        error.put("error", e.getMessage());
+	        return ResponseEntity.badRequest().body(error);
+	    }
+
+	    // 2. Validate the alias format if one was supplied
+	    boolean hasAlias = customAlias != null && !customAlias.trim().isEmpty();
+	    if (hasAlias) {
+	        try {
+	            AliasValidator.validate(customAlias);
+	        } catch (IllegalArgumentException e) {
+	            error.put("error", e.getMessage());
+	            return ResponseEntity.badRequest().body(error);
+	        }
+	    }
+	    // ────────────────────────────────────────────────────────────────────────
+
+	    try {
+	        URLMapping mapping = service.createShortUrl(longUrl, customAlias);
 	        String shortUrl = baseUrl + "/api/" + mapping.getShortcode();
 
 	        Map<String, String> response = new HashMap<>();
 	        response.put("shortcode", mapping.getShortcode());
-	        
+
 	        String qrCodeBase64 = "";
 			try {
 				qrCodeBase64 = QRCodeGenerator.generateQRCode(shortUrl, 200, 200);
 			} catch (WriterException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	        response.put("qrCode", qrCodeBase64);
 	        return ResponseEntity.ok(response);
+
 	    } catch (IllegalArgumentException e) {
-	        // Custom alias already taken
-	        Map<String, String> error = new HashMap<>();
+	        // "Custom alias already taken" → 409 Conflict
 	        error.put("error", e.getMessage());
-	        return ResponseEntity.status(409).body(error); // 409 Conflict
+	        return ResponseEntity.status(409).body(error);
 	    }
 	}
 
+	/**
+	 * GET /api/check-alias/{alias}
+	 * Returns { "available": true/false } when the alias format is valid.
+	 * Returns 400 with { "error": "..." } when the alias format is invalid —
+	 * the frontend should show that inline rather than "Available/Taken".
+	 */
 	@GetMapping("/check-alias/{alias}")
-	public ResponseEntity<Map<String, Boolean>> checkAlias(@PathVariable String alias) {
+	public ResponseEntity<?> checkAlias(@PathVariable String alias) {
+	    // Validate format before hitting the DB
+	    if (!AliasValidator.isValid(alias)) {
+	        Map<String, String> error = new HashMap<>();
+	        error.put("error",
+	            "Alias may only contain letters, digits, hyphens (-), and underscores (_).");
+	        return ResponseEntity.badRequest().body(error);
+	    }
+
 		boolean exists = service.AliasExistornot(alias);
 	    Map<String, Boolean> response = new HashMap<>();
 	    response.put("available", !exists);
 	    return ResponseEntity.ok(response);
-
 	}
-	
+
 	// GET /api/{shortcode} — redirect to original
 	@GetMapping("/{shortcode}")
 	public ResponseEntity<?> redirect(@PathVariable String shortcode) {

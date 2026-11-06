@@ -7,11 +7,12 @@ import org.springframework.stereotype.Service;
 
 import models.URLMapping;
 import repository.URLMappingRepository;
+import utils.URLNormalizer;
 
 @Service
 public class URLMappingService {
 
-	private URLMappingRepository repository;
+	private final URLMappingRepository repository;
 	private final String ALPHA_NUMERIC = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 	private final int SHORT_CODE_LENGTH = 6;
 
@@ -33,32 +34,55 @@ public class URLMappingService {
 		String code;
 		do {
 			code = generateRandomCode();
-		} while (repository.findByshortcode(code).isPresent());
+		} while (repository.existsByshortcode(code));
 		return code;
-
 	}
 
-	public URLMapping createOrUpdateShortUrl(String longurl, String customalias) {
+	/**
+	 * Returns or creates a short URL mapping:
+	 *
+	 * <ul>
+	 *   <li><b>No alias:</b> return any existing row for this URL (reuse its
+	 *       shortcode). If none exists, generate a new one and persist it.</li>
+	 *   <li><b>Custom alias:</b> always insert a new independent row so existing
+	 *       shortcodes for the same URL are never touched or invalidated.</li>
+	 * </ul>
+	 *
+	 * @param longurl     destination URL (normalized before use)
+	 * @param customalias optional alias; {@code null} or blank → auto-generate
+	 * @return the existing or newly saved {@link URLMapping}
+	 * @throws IllegalArgumentException if the alias is already taken (→ 409)
+	 */
+	public URLMapping createShortUrl(String longurl, String customalias) {
 
-		if (customalias != null && repository.findByshortcode(customalias).isPresent()) {
-			throw new IllegalArgumentException("Custom alias already taken!");
-		}
+		String normalizedUrl = URLNormalizer.normalize(longurl);
 
-		Optional<URLMapping> existing = repository.findBylongurl(longurl);
-		if (existing.isPresent()) {
-			URLMapping mapping = existing.get();
-			// Overwrite with custom alias if provided, else keep old one
-			if (customalias != null) {
-				mapping.setShortcode(customalias);
+		// Treat blank alias the same as no alias
+		String alias = (customalias != null && !customalias.trim().isEmpty())
+				? customalias.trim()
+				: null;
+
+		if (alias != null) {
+			// Custom alias: check availability then always insert a new row
+			if (repository.existsByshortcode(alias)) {
+				throw new IllegalArgumentException("Custom alias already taken!");
 			}
-			return repository.save(mapping); // Save updated record
-		}
-		String shortcode = (customalias != null && !customalias.trim().isEmpty()) ? customalias : generateShortCode();
+			URLMapping mapping = new URLMapping();
+			mapping.setLongurl(normalizedUrl);
+			mapping.setShortcode(alias);
+			return repository.save(mapping);
 
-		URLMapping mapping = new URLMapping();
-		mapping.setLongurl(longurl);
-		mapping.setShortcode(shortcode);
-		return repository.save(mapping);
+		} else {
+			// No alias: reuse any existing shortcode for this URL, or create one
+			Optional<URLMapping> existing = repository.findFirstBylongurl(normalizedUrl);
+			if (existing.isPresent()) {
+				return existing.get();
+			}
+			URLMapping mapping = new URLMapping();
+			mapping.setLongurl(normalizedUrl);
+			mapping.setShortcode(generateShortCode());
+			return repository.save(mapping);
+		}
 	}
 
 	public Optional<URLMapping> getByShortCode(String shortcode) {

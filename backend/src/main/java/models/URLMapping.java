@@ -7,20 +7,27 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
 @Entity
-@Table
+@Table(
+    indexes = {
+        @Index(name = "idx_url_mapping_longurl", columnList = "longurl")
+    }
+)
 public class URLMapping {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(unique = true, nullable = false)
+	// Not unique: same destination URL can have multiple shortcodes/aliases
+	@Column(nullable = false)
 	private String longurl;
 
+	// Globally unique across all rows
 	@Column(unique = true, nullable = false, length = 15)
 	private String shortcode;
 
@@ -33,7 +40,7 @@ public class URLMapping {
 	@Column
 	private int clickCount = 0;
 
-	// Explicit no-arg constructor required
+	// Explicit no-arg constructor required by JPA
 	public URLMapping() {
 	}
 

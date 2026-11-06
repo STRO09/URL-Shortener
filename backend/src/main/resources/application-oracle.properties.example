@@ -1,0 +1,11 @@
+# ============================================================================
+# Oracle Database Free Environment Example Template
+# Rename or copy to set local environment variables, or run with:
+# java -Dspring.profiles.active=oracle -DORACLE_DB_PASSWORD=your_password -jar app.jar
+# ============================================================================
+
+ORACLE_DB_HOST=localhost
+ORACLE_DB_PORT=1521
+ORACLE_DB_SERVICE=FREEPDB1
+ORACLE_DB_USER=URLAPP
+ORACLE_DB_PASSWORD=YOUR_SECURE_PASSWORD_HERE

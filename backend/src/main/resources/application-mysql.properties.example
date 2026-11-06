@@ -1,0 +1,10 @@
+# ============================================================================
+# MySQL Environment Example Template
+# Copy or rename this file, or set these environment variables locally:
+# ============================================================================
+
+MYSQL_DB_HOST=localhost
+MYSQL_DB_PORT=3306
+MYSQL_DB_NAME=urlshortener
+MYSQL_DB_USER=root
+MYSQL_DB_PASSWORD=YOUR_MYSQL_PASSWORD_HERE
