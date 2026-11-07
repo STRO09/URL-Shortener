@@ -41,7 +41,8 @@ Thumbs.db
 
 # === Environment / Secrets ===
 .env
-application.properties
+application-mysql.properties
+application-oracle.properties
 application.yml
 
 # === Temp files ===
