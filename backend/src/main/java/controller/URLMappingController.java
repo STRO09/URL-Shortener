@@ -20,7 +20,7 @@ import utils.URLNormalizer;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173", "https://url-shortener-and-modifier.netlify.app"})
 public class URLMappingController {
 
 	private final URLMappingService service;
