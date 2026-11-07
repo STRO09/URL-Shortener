@@ -45,12 +45,12 @@
 		</dependency>
 
 		<!-- Oracle JDBC Driver for Java 8 / Spring Boot -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
 			<artifactId>ojdbc8</artifactId>
 			<version>21.11.0.0</version>
 			<scope>runtime</scope>
-		</dependency>
+		</dependency> -->
 
 		<!-- for qr code -->
 		<dependency>
