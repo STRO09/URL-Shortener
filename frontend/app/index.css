@@ -5,3 +5,76 @@ body {
   color: white;
   min-height: 100vh;
 }
+
+.app-shell {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 48px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.server-marquee {
+  position: fixed;
+  z-index: 10;
+  inset: 0 0 auto;
+  overflow: hidden;
+  padding: 12px 0;
+  color: #242424;
+  background: #ffea00;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.server-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: server-marquee-scroll 28s linear infinite;
+}
+
+.server-marquee__track span {
+  padding-left: 48px;
+}
+
+@keyframes server-marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.server-status-card {
+  box-sizing: border-box;
+  width: min(100%, 500px);
+  padding: 40px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.server-status-code {
+  margin: 0;
+  font-size: 48px;
+  font-weight: 700;
+}
+
+.server-status-card button {
+  margin-top: 12px;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 10px;
+  color: #764ba2;
+  background: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .server-marquee__track {
+    animation: none;
+  }
+}

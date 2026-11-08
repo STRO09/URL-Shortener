@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { shortenUrl, checkalias } from "./api/url";
+import { checkHealth } from "./api/health";
 
 // ---------------------------------------------------------------------------
 // Alias validation — mirrors the backend AliasValidator rules exactly:
@@ -16,6 +17,24 @@ function validateAliasFormat(value) {
   return null; // null = no format error
 }
 
+function isServerUnavailableError(error) {
+  return !error?.response || error.response.status >= 500;
+}
+
+function ServerMarquee() {
+  const message =
+    "This API may take a little while to wake up after 15 minutes of inactivity. Thanks for your patience.";
+
+  return (
+    <div className="server-marquee" role="status">
+      <div className="server-marquee__track">
+        <span>{message}</span>
+        <span aria-hidden="true">{message}</span>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [longurl, setLongUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
@@ -26,10 +45,22 @@ function App() {
   const [aliasStatus, setAliasStatus] = useState(null);
   const [aliasStatusMessage, setAliasStatusMessage] = useState("");
   const [qrCode, setQrCode] = useState("");
+  const [serverStatus, setServerStatus] = useState("checking");
 
   // Persistent cache that survives re-renders (unlike const cache = {})
   const cacheRef = useRef({});
   const timeoutRef = useRef(null);
+
+  const verifyServer = useCallback(async () => {
+    setServerStatus("checking");
+    try {
+      await checkHealth();
+      setServerStatus("available");
+    } catch (err) {
+      console.error("Health check failed:", err);
+      setServerStatus("unavailable");
+    }
+  }, []);
 
   const checkAliasAvailability = (value) => {
     clearTimeout(timeoutRef.current);
@@ -53,17 +84,22 @@ function App() {
       const cache = cacheRef.current;
       if (cache[value] !== undefined) {
         setAliasStatus(cache[value]);
-        setAliasStatusMessage(cache[value] === "available" ? "Available ✅" : "Taken ❌");
+        setAliasStatusMessage(
+          cache[value] === "available" ? "Available ✅" : "Taken ❌",
+        );
         return;
       }
       try {
         const data = await checkalias(value);
         const status = data.available ? "available" : "taken";
         setAliasStatus(status);
-        setAliasStatusMessage(status === "available" ? "Available ✅" : "Taken ❌");
+        setAliasStatusMessage(
+          status === "available" ? "Available ✅" : "Taken ❌",
+        );
         cache[value] = status;
       } catch (err) {
         console.error(err);
+        if (isServerUnavailableError(err)) setServerStatus("unavailable");
       }
     }, 400);
   };
@@ -82,13 +118,20 @@ function App() {
 
     try {
       const data = await shortenUrl(longurl, alias);
-      const base = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+      const base =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
       setShortUrl(`${base}/${data.shortcode}`);
       if (data.qrCode) setQrCode(data.qrCode);
     } catch (err) {
       const serverMessage = err?.response?.data?.error;
       console.error("Error:", err);
-      alert(serverMessage || "Something went wrong. Check console for details.");
+      if (isServerUnavailableError(err)) {
+        setServerStatus("unavailable");
+        return;
+      }
+      alert(
+        serverMessage || "Something went wrong. Check console for details.",
+      );
     }
   };
 
@@ -105,6 +148,10 @@ function App() {
     if (window.location.pathname !== "/") setIs404(true);
   }, []);
 
+  useEffect(() => {
+    verifyServer();
+  }, [verifyServer]);
+
   if (is404) {
     return (
       <div style={{ textAlign: "center", marginTop: "50px" }}>
@@ -114,23 +161,40 @@ function App() {
     );
   }
 
+  if (serverStatus !== "available") {
+    const isChecking = serverStatus === "checking";
+
+    return (
+      <main className="app-shell">
+        <ServerMarquee />
+        <section className="server-status-card" aria-live="polite">
+          <p className="server-status-code">{isChecking ? "..." : "503"}</p>
+          <h1>{isChecking ? "Waking up the server" : "Server unavailable"}</h1>
+          <p>
+            {isChecking
+              ? "The first request can take a little while while the server starts."
+              : "We couldn't reach the URL shortener API. It may still be starting or temporarily unavailable."}
+          </p>
+          {!isChecking && (
+            <button type="button" onClick={verifyServer}>
+              Try again
+            </button>
+          )}
+        </section>
+      </main>
+    );
+  }
+
   // Derive button disabled state: disabled when alias has a format error or is taken
-  const isSubmitDisabled = alias && (aliasStatus === "taken" || aliasStatus === "invalid");
+  const isSubmitDisabled =
+    alias && (aliasStatus === "taken" || aliasStatus === "invalid");
 
   // Message colour: green for available, red for taken/invalid
-  const messageColor =
-    aliasStatus === "available" ? "lightgreen" : "tomato";
+  const messageColor = aliasStatus === "available" ? "lightgreen" : "tomato";
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
+    <main className="app-shell">
+      <ServerMarquee />
       <div
         style={{
           backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -182,7 +246,7 @@ function App() {
           >
             <input
               type="text"
-              placeholder="Custom alias (optional) — letters, digits, - _"
+              placeholder="Custom alias (optional, only 15 characters) — letters, digits, - _"
               value={alias}
               maxLength={15}
               onChange={(e) => handleAliasChange(e.target.value)}
@@ -293,7 +357,7 @@ function App() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 
